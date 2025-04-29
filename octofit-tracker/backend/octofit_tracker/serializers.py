@@ -1,48 +1,34 @@
 from rest_framework import serializers
 from .models import User, Team, Activity, Leaderboard, Workout
-from bson import ObjectId
-
-class ObjectIdField(serializers.Field):
-    def to_representation(self, value):
-        return str(value)
-
-    def to_internal_value(self, data):
-        return ObjectId(data)
 
 class UserSerializer(serializers.ModelSerializer):
-    _id = ObjectIdField()
-
     class Meta:
         model = User
-        fields = '__all__'
+        fields = ['id', 'username', 'email', 'password', 'created_at']
+        extra_kwargs = {'password': {'write_only': True}}
 
 class TeamSerializer(serializers.ModelSerializer):
-    _id = ObjectIdField()
-    members = UserSerializer(many=True)
+    members = UserSerializer(many=True, read_only=True)
 
     class Meta:
         model = Team
-        fields = '__all__'
+        fields = ['id', 'name', 'members', 'created_at']
 
 class ActivitySerializer(serializers.ModelSerializer):
-    _id = ObjectIdField()
-    user = ObjectIdField()
+    user = UserSerializer(read_only=True)
 
     class Meta:
         model = Activity
-        fields = '__all__'
+        fields = ['id', 'user', 'type', 'duration', 'calories_burned', 'date']
 
 class LeaderboardSerializer(serializers.ModelSerializer):
-    _id = ObjectIdField()
-    user = UserSerializer()
+    team = TeamSerializer(read_only=True)
 
     class Meta:
         model = Leaderboard
-        fields = '__all__'
+        fields = ['id', 'team', 'points', 'updated_at']
 
 class WorkoutSerializer(serializers.ModelSerializer):
-    _id = ObjectIdField()
-
     class Meta:
         model = Workout
-        fields = '__all__'
+        fields = ['id', 'name', 'description', 'duration', 'created_at']
